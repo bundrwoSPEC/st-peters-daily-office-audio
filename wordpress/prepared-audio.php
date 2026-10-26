@@ -74,6 +74,57 @@ body.stp-prayer-space{background:#f5eee2!important}body.stp-prayer-space #header
 @media(prefers-reduced-motion:reduce){#stp-office .qp-scroll p{transition:none}}
 
 #stp-office .qp-has-reading .qp-intro{padding:10px 0 8px}#stp-office .qp-has-reading .qp-intro h1{font-size:30px!important;margin:12px 0 5px!important}#stp-office .qp-has-reading .qp-candle{height:42px}#stp-office .qp-has-reading .qp-wax{height:22px}#stp-office .qp-has-reading .qp-flame{top:0;height:18px}#stp-office .qp-has-reading .qp-listen{margin:20px 0 22px}
+/* St. Peter's existing navy, gold, and website typography. */
+body.stp-prayer-space{background:#fffdf8!important}
+#stp-office{background:#fffdf8!important;color:#21495d!important;font-family:'Libre Baskerville',Georgia,serif!important}
+#stp-office #stp-natural-audio{max-width:1000px;padding:16px 24px 40px}
+#stp-office .qp-mast{background:#21495d;border-top:4px solid #c9a14a;border-bottom:3px solid #c9a14a;border-radius:10px;padding:12px 22px 15px;color:#fffdf8}
+#stp-office .qp-top{min-height:32px;font-family:'Libre Baskerville',Georgia,serif}
+#stp-office .qp-church,#stp-office #qp-settings>summary{color:#fffdf8;font-family:'Libre Baskerville',Georgia,serif}
+#stp-office #qp-settings>summary span{color:#e2c379}
+#stp-office .qp-intro{padding:3px 0 8px}
+#stp-office .qp-photo{position:relative;width:min(430px,100%);height:170px;margin:0 auto 4px;overflow:hidden;border-radius:14px}
+#stp-office .qp-photo img{width:100%;height:100%;object-fit:cover;object-position:center 50%;display:block}
+#stp-office .qp-photo:after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(0deg,#21495d 0%,transparent 17%,transparent 83%,#21495d 100%),linear-gradient(90deg,#21495d 0%,transparent 12%,transparent 88%,#21495d 100%)}
+#stp-office .qp-intro h1{font-family:'Marcellus',Georgia,serif!important;font-size:34px!important;font-weight:400!important;color:#fffdf8!important;margin:4px 0 10px!important;letter-spacing:0}
+#stp-office .qp-selection{margin:0 0 6px;gap:18px}
+#stp-office #office-date{color:#fffdf8!important;border-bottom-color:#c9a14a!important;font-family:'Libre Baskerville',Georgia,serif!important;background:transparent!important;font-size:15px!important;width:168px;color-scheme:light}
+#stp-office #office-date::-webkit-calendar-picker-indicator{filter:brightness(0) invert(1)!important;opacity:.85}
+#stp-office .qp-service,#stp-office .qp-service select{color:#fffdf8;font-family:'Libre Baskerville',Georgia,serif;font-size:15px}
+#stp-office .qp-service select{border-bottom-color:#c9a14a;background:transparent}
+#stp-office .qp-service option{background:#fffdf8;color:#21495d}
+#stp-office .qp-list{color:#e2c379}
+#stp-office .qp-liturgy{font-family:'Libre Baskerville',Georgia,serif;color:#e6d3a9;font-size:12px}
+#stp-office #qp-color{border-color:#f0dfb6}
+#stp-office .qp-listen{margin:16px 0 0}
+#stp-office #qp-play{background:#c9a14a;color:#142f3c!important;border-color:#e2c379;font-family:'Libre Baskerville',Georgia,serif;font-size:15px;border-radius:6px;min-height:48px;padding:11px 25px;box-shadow:none}
+#stp-office #qp-play:hover{background:#ddbd76}
+#stp-office .qp-error{color:#fff0d6;font-family:'Libre Baskerville',Georgia,serif}
+#stp-office .qp-options{background:#fffdf8;color:#21495d;border:2px solid #c9a14a;border-radius:8px}
+#stp-office .qp-options h2{font-family:'Marcellus',Georgia,serif;color:#21495d}
+#stp-office .qp-options label,#stp-office .qp-options select,#stp-office .qp-options button,#stp-office .qp-note,#stp-office .qp-more,#stp-office .qp-more summary{font-family:'Libre Baskerville',Georgia,serif;color:#21495d}
+#stp-office .qp-options select{border-color:#c9a14a;background:#fffdf8}
+#stp-office .qp-options button{color:#21495d!important;border-color:#c9a14a}
+#stp-office .qp-note{color:#546674;font-size:12px}
+#stp-office .qp-check input{accent-color:#21495d}
+#stp-office #qp-reading{border-top:0;padding-top:12px}
+#stp-office #qp-reading-title{color:#21495d;font-family:'Libre Baskerville',Georgia,serif}
+#stp-office .qp-scroll{height:clamp(290px,calc(100svh - 300px),720px);background:#fffdf8;border:1px solid #d9c38f;border-left:3px solid #c9a14a;color:#21495d;font:19px/1.9 'Libre Baskerville',Georgia,serif;padding:18px 26px 36px;border-radius:7px;scrollbar-color:#c9a14a #fffdf8}
+#stp-office .qp-scroll h2{font-family:'Marcellus',Georgia,serif;color:#21495d;font-weight:400;margin:20px 0 12px}
+#stp-office .qp-scroll .being-read{background:#f3e7c8!important;color:#142f3c!important;box-shadow:inset 2px 0 #c9a14a}
+#stp-office .qp-scroll.qp-large{font-size:23px}
+#stp-office #qp-resume-follow{font-family:'Libre Baskerville',Georgia,serif;color:#21495d!important;border-color:#c9a14a;background:#fffdf8}
+#stp-office #qp-finish{color:#21495d;font-family:'Libre Baskerville',Georgia,serif}
+#stp-office #qp-record-prayer{color:#21495d!important;border-color:#c9a14a;font-family:'Libre Baskerville',Georgia,serif}
+#stp-office .qp-has-reading .qp-mast{padding-top:7px;padding-bottom:10px}
+#stp-office .qp-has-reading .qp-intro{padding:0}
+#stp-office .qp-has-reading .qp-photo{display:none}
+#stp-office .qp-has-reading .qp-intro h1{font-size:23px!important;margin:1px 0 4px!important}
+#stp-office .qp-has-reading .qp-top{min-height:28px}
+#stp-office .qp-has-reading .qp-selection{margin-bottom:3px}
+#stp-office .qp-has-reading .qp-listen{margin:8px 0 0}
+#stp-office .qp-has-reading #qp-play{min-height:40px;padding:8px 22px}
+@media(max-width:600px){#stp-office #stp-natural-audio{padding:8px 10px 24px}#stp-office .qp-mast{padding:8px 12px 12px;border-radius:7px}#stp-office .qp-photo{height:145px;width:min(360px,100%)}#stp-office .qp-intro h1{font-size:28px!important}#stp-office .qp-selection{gap:7px 10px}#stp-office #office-date{font-size:16px!important;width:157px}#stp-office .qp-service select{font-size:16px;max-width:182px}#stp-office .qp-top,#stp-office #qp-settings>summary{font-size:11px}#stp-office .qp-church{font-size:10px;letter-spacing:0}#stp-office .qp-options{width:min(530px,calc(100vw - 36px))}#stp-office .qp-scroll{height:calc(100svh - 285px);min-height:270px;padding:12px 10px 30px;font-size:17px;line-height:1.9}#stp-office .qp-scroll.qp-large{font-size:21px}#stp-office .qp-has-reading .qp-intro h1{font-size:21px!important}#stp-office .qp-has-reading .qp-top{min-height:26px}}
 </style>
 <script>
 (function(){'use strict';
@@ -93,11 +144,12 @@ section.innerHTML=`
 <details class="qp-more" id="qp-resources"><summary>Prayer resources &amp; my prayer journal</summary><div id="qp-legacy"></div></details>
 <p class="qp-note">Listen as often as you like. Playing, restarting, changing the pace, or choosing another voice uses saved recordings; it does not generate new prayers.</p><p class="qp-note">AI-generated voices · Book of Common Prayer (1979), with public-domain scripture supplied by <a href="https://usedailyoffice.com/1979/" target="_blank" rel="noopener">Gracelight</a>. The matching text below follows this recording. Other prayer resources may use different readings or optional prayers.</p>
 </div></details></div>
-<header class="qp-intro"><div class="qp-candle" aria-hidden="true"><span class="qp-flame"></span><span class="qp-wax"></span></div><h1>Be still. God is near.</h1></header>
+<header class="qp-intro"><div class="qp-photo"><img src="https://raw.githubusercontent.com/bundrwoSPEC/st-peters-daily-office-audio/66d96334d5dd0e61f76b3002247349da99e16d02/assets/prayer-bible-candle.webp" alt="An open Bible and a lit candle on a wooden table" width="2048" height="875"></div><h1>Be still. God is near.</h1></header>
 <div class="qp-selection"><div id="qp-date-mount"></div><label class="qp-service"><span class="qp-sr">Choose a prayer service</span><span aria-hidden="true" class="qp-list">☷</span><select id="qp-service" aria-label="Choose a prayer service"><option value="morning-prayer">Morning Prayer</option><option value="noonday-prayer">Noonday Prayer</option><option value="evening-prayer">Evening Prayer</option><option value="compline">Compline</option></select></label></div>
 <div class="qp-liturgy"><span id="qp-color" aria-hidden="true"></span><span id="qp-season-mount"></span><span id="qp-observance-mount"></span></div>
 <div class="qp-listen"><button type="button" id="qp-play" disabled><span id="qp-play-icon" aria-hidden="true">▶</span><span id="qp-play-label">Preparing prayer…</span></button><p id="stp-natural-status" class="qp-sr" role="status">Preparing your prayer.</p></div>
 <div id="qp-reading" hidden><div class="qp-reading-top"><p id="qp-reading-title"></p><button type="button" id="qp-resume-follow" hidden>Follow the reading</button></div><div id="stp-natural-text" class="qp-scroll" tabindex="0" aria-label="Prayer text, highlighted with the recording"></div><div id="qp-finish" hidden><p>Go in peace. Carry this stillness with you.</p><button type="button" id="qp-record-prayer">Mark this time as prayed</button></div></div>`;
+const mast=document.createElement('div');mast.className='qp-mast';['.qp-top','.qp-intro','.qp-selection','.qp-liturgy','.qp-listen'].forEach(selector=>mast.appendChild(section.querySelector(selector)));section.prepend(mast);
 root.prepend(section);
 const legacy=$('qp-legacy');oldNodes.forEach(node=>{if(!['STYLE','SCRIPT','NOSCRIPT'].includes(node.tagName))legacy.appendChild(node);});
 // Move the existing controls so their calendar and prayer-journal behavior stays intact.
