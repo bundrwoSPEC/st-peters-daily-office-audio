@@ -224,6 +224,16 @@ body.stp-prayer-space{background-color:#315b72!important;background-image:linear
 #stp-office .qp-controls .qp-selection{min-width:0}
 #stp-office .qp-mast{padding-bottom:4px!important}
 @media(max-width:600px){#stp-office .qp-controls,#stp-office .qp-has-reading .qp-controls{grid-template-columns:minmax(0,1fr) 138px 38px;gap:6px}#stp-office .qp-controls .qp-calendar{width:138px;padding:0 3px 4px}#stp-office .qp-controls #qp-date-mount #office-date{width:128px;font-size:14px!important;padding:3px 2px!important;min-height:32px}#stp-office .qp-controls .qp-liturgy{font-size:9px;gap:0;line-height:1.35}#stp-office .qp-controls .qp-service{width:100%;min-width:0;gap:0}#stp-office .qp-controls .qp-list{display:none}#stp-office .qp-controls .qp-service select{width:100%;min-width:0;font-size:13px;padding:5px 0}#stp-office .qp-controls #qp-play{width:38px;height:38px;min-height:38px}#stp-office .qp-intro h1,#stp-office .qp-has-reading .qp-intro h1{margin:2px auto 7px!important}}
+
+/* Settings below the liturgical date; title centered between gold rules. */
+#stp-office .qp-date-stack{justify-self:center;min-width:0;text-align:center}
+#stp-office .qp-date-stack #qp-settings{display:table;margin:2px auto 0}
+#stp-office .qp-date-stack #qp-settings>summary{padding:1px 4px}
+#stp-office .qp-date-stack .qp-options{top:27px}
+#stp-office .qp-place{border-bottom:0;padding-bottom:0}
+#stp-office .qp-intro h1,#stp-office .qp-has-reading .qp-intro h1{position:relative;width:240px;max-width:100%;margin:0 auto 7px!important;padding:9px 0!important;line-height:1.25!important;border-top:1px solid #c9a14a;border-bottom:0}
+#stp-office .qp-intro h1:after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:196px;max-width:90%;height:1px;background:#c9a14a}
+@media(max-width:600px){#stp-office .qp-intro h1,#stp-office .qp-has-reading .qp-intro h1{width:220px;padding:8px 0!important;margin:0 auto 7px!important}#stp-office .qp-intro h1:after{width:178px}#stp-office .qp-date-stack{width:138px}}
 </style>
 <script>
 (function(){'use strict';
@@ -250,6 +260,7 @@ section.innerHTML=`
 <div id="qp-reading"><div class="qp-reading-top"><p id="qp-reading-title"></p><span class="qp-silent-hint">Read silently, or listen.</span><button type="button" id="qp-resume-follow" hidden>Follow the reading</button></div><div id="stp-natural-text" class="qp-scroll" tabindex="0" aria-label="Prayer text, highlighted with the recording"></div><div id="qp-finish" hidden><p>Go in peace. Carry this stillness with you.</p><button type="button" id="qp-record-prayer">Mark this time as prayed</button></div></div>`;
 const mast=document.createElement('div');mast.className='qp-mast';['.qp-top','.qp-intro','.qp-liturgy'].forEach(selector=>mast.appendChild(section.querySelector(selector)));const controls=document.createElement('div');controls.className='qp-controls';['.qp-selection','.qp-listen'].forEach(selector=>controls.appendChild(section.querySelector(selector)));mast.appendChild(controls);section.prepend(mast);
 const calendar=document.createElement('div');calendar.className='qp-calendar';const intro=mast.querySelector('.qp-intro');calendar.appendChild(section.querySelector('#qp-date-mount'));calendar.appendChild(mast.querySelector('.qp-liturgy'));controls.insertBefore(calendar,controls.querySelector('.qp-listen'));
+const dateStack=document.createElement('div');dateStack.className='qp-date-stack';calendar.before(dateStack);dateStack.appendChild(calendar);dateStack.appendChild(section.querySelector('#qp-settings'));
 root.prepend(section);
 const legacy=$('qp-legacy');oldNodes.forEach(node=>{if(!['STYLE','SCRIPT','NOSCRIPT'].includes(node.tagName))legacy.appendChild(node);});
 // Move the existing controls so their calendar and prayer-journal behavior stays intact.
