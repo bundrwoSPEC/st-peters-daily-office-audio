@@ -201,6 +201,10 @@ body.stp-prayer-space{background-image:linear-gradient(#21495d8c,#21495d8c),url(
 #stp-office .qp-scroll{border:3px solid #c9a14a;box-shadow:0 0 0 1px #ecd8a2;border-radius:7px}
 #stp-office .qp-text-open:not(.qp-has-reading) .qp-scroll,#stp-office .qp-has-reading .qp-scroll{height:calc(100svh - 270px);min-height:280px}
 @media(max-width:600px){#stp-office #stp-natural-audio{padding-top:7px}#stp-office .qp-mast{padding:0 2px 5px!important}#stp-office .qp-top,#stp-office .qp-has-reading .qp-top{grid-template-columns:47px minmax(0,1fr) 47px;gap:7px;min-height:72px}#stp-office .qp-shield-link{width:47px;height:62px}#stp-office .qp-shield-link img{width:39px;height:48px}#stp-office .qp-church{font-size:17px!important;line-height:1.25}#stp-office .qp-place{font-size:8px;letter-spacing:.06em;margin-top:3px}#stp-office #qp-settings>summary{font-size:9px;padding:0 3px}#stp-office .qp-intro h1,#stp-office .qp-has-reading .qp-intro h1{font-size:23px!important;margin:4px auto 7px!important;padding-bottom:5px}#stp-office .qp-calendar{margin-bottom:3px}#stp-office .qp-text-open:not(.qp-has-reading) .qp-scroll,#stp-office .qp-has-reading .qp-scroll{height:calc(100svh - 275px);min-height:260px}}
+
+/* Match the Morning Prayer gold rule throughout the heading. */
+#stp-office .qp-intro h1,#stp-office .qp-has-reading .qp-intro h1{border-bottom:1px solid #c9a14a}
+#stp-office .qp-place{display:table;margin:4px auto 0;padding:0 12px 4px;border-bottom:1px solid #c9a14a}
 </style>
 <script>
 (function(){'use strict';
