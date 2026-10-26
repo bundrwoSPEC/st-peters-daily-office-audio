@@ -205,6 +205,11 @@ body.stp-prayer-space{background-image:linear-gradient(#21495d8c,#21495d8c),url(
 /* Match the Morning Prayer gold rule throughout the heading. */
 #stp-office .qp-intro h1,#stp-office .qp-has-reading .qp-intro h1{border-bottom:1px solid #c9a14a}
 #stp-office .qp-place{display:table;margin:4px auto 0;padding:0 12px 4px;border-bottom:1px solid #c9a14a}
+
+/* Let the woven satin detail show, with a gentle diagonal sheen. */
+body.stp-prayer-space{background-color:#315b72!important;background-image:linear-gradient(115deg,#071b2b30 0%,#ffffff08 20%,#ffffff55 39%,#ffffff05 53%,#071b2b28 73%,#ffffff30 100%),url('https://raw.githubusercontent.com/bundrwoSPEC/st-peters-daily-office-audio/99c41209589b9f4cd78702d7fa99b2a747b03102/assets/chasuble-brocade.webp')!important;background-blend-mode:soft-light,multiply!important;background-size:100% 100%,700px auto!important}
+#stp-office .qp-place{width:240px;max-width:100%;padding-bottom:4px}
+@media(max-width:600px){#stp-office .qp-place{width:220px}}
 </style>
 <script>
 (function(){'use strict';
