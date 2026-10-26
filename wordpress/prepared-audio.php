@@ -210,6 +210,11 @@ body.stp-prayer-space{background-image:linear-gradient(#21495d8c,#21495d8c),url(
 body.stp-prayer-space{background-color:#315b72!important;background-image:linear-gradient(115deg,#071b2b30 0%,#ffffff08 20%,#ffffff55 39%,#ffffff05 53%,#071b2b28 73%,#ffffff30 100%),url('https://raw.githubusercontent.com/bundrwoSPEC/st-peters-daily-office-audio/99c41209589b9f4cd78702d7fa99b2a747b03102/assets/chasuble-brocade.webp')!important;background-blend-mode:soft-light,multiply!important;background-size:100% 100%,700px auto!important}
 #stp-office .qp-place{width:240px;max-width:100%;padding-bottom:4px}
 @media(max-width:600px){#stp-office .qp-place{width:220px}}
+
+/* Keep prayer selection left and playback right above the reading. */
+#stp-office .qp-controls,#stp-office .qp-has-reading .qp-controls{justify-content:space-between;width:100%;flex-wrap:nowrap}
+#stp-office .qp-controls .qp-selection{justify-content:flex-start}
+#stp-office .qp-controls .qp-listen{margin-left:auto;flex-shrink:0}
 </style>
 <script>
 (function(){'use strict';
