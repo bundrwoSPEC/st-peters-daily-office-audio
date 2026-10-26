@@ -234,6 +234,14 @@ body.stp-prayer-space{background-color:#315b72!important;background-image:linear
 #stp-office .qp-intro h1,#stp-office .qp-has-reading .qp-intro h1{position:relative;width:240px;max-width:100%;margin:0 auto 7px!important;padding:9px 0!important;line-height:1.25!important;border-top:1px solid #c9a14a;border-bottom:0}
 #stp-office .qp-intro h1:after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:196px;max-width:90%;height:1px;background:#c9a14a}
 @media(max-width:600px){#stp-office .qp-intro h1,#stp-office .qp-has-reading .qp-intro h1{width:220px;padding:8px 0!important;margin:0 auto 7px!important}#stp-office .qp-intro h1:after{width:178px}#stp-office .qp-date-stack{width:138px}}
+
+/* Equal side columns keep the liturgical date centered on every screen. */
+#stp-office .qp-controls,#stp-office .qp-has-reading .qp-controls{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}
+#stp-office .qp-controls .qp-selection{position:relative;justify-self:start;max-width:100%;padding-bottom:1px}
+#stp-office .qp-controls .qp-selection:after{content:'';position:absolute;left:0;bottom:0;width:110px;max-width:85%;height:1px;background:#c9a14a}
+#stp-office .qp-controls .qp-service select{border-bottom:0!important;max-width:150px}
+@media(max-width:600px){#stp-office .qp-controls,#stp-office .qp-has-reading .qp-controls{grid-template-columns:minmax(0,1fr) 138px minmax(0,1fr)}#stp-office .qp-controls .qp-selection{width:100%}#stp-office .qp-controls .qp-service select{max-width:100%}#stp-office .qp-controls .qp-selection:after{width:90px;max-width:85%}}
+@media(max-width:400px){#stp-office .qp-controls .qp-service select{font-size:12px}}
 </style>
 <script>
 (function(){'use strict';
