@@ -262,6 +262,21 @@ body.stp-prayer-space{background-color:#315b72!important;background-image:linear
 #stp-office .qp-has-reading .qp-reading-top .qp-listen{margin-left:auto}
 #stp-office .qp-has-reading .qp-reading-top #qp-resume-follow:not([hidden])~.qp-listen{margin-left:0}
 @media(max-width:600px){#stp-office .qp-date-stack{width:auto}#stp-office .qp-controls .qp-calendar{width:250px;padding:5px 16px 10px}#stp-office .qp-controls #qp-date-mount #office-date{width:204px;font-size:17px!important}#stp-office .qp-controls .qp-liturgy{font-size:11px}#stp-office .qp-reading-top{gap:8px;padding-left:0;padding-right:0}#stp-office .qp-reading-top .qp-service{gap:0}#stp-office .qp-reading-top .qp-list{display:none}#stp-office .qp-reading-top .qp-service select{font-size:13px;max-width:150px}#stp-office .qp-reading-top .qp-silent-hint{font-size:9px;white-space:nowrap}#stp-office .qp-reading-top #qp-play{width:36px;height:36px;min-height:36px}}
+
+/* Center settings between prayer choice and playback, with a quieter date gap. */
+#stp-office .qp-intro h1,#stp-office .qp-has-reading .qp-intro h1{margin-bottom:23px!important}
+#stp-office .qp-date-stack{margin-bottom:0}
+#stp-office .qp-mast{padding-bottom:0!important}
+#stp-office #qp-reading{padding-top:0}
+#stp-office .qp-reading-top{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px;padding:0 8px 7px}
+#stp-office .qp-reading-top #qp-settings{justify-self:center;display:block;text-align:center}
+#stp-office .qp-reading-top #qp-settings>summary{padding:2px 4px;font-size:11px}
+#stp-office .qp-reading-top .qp-options{top:29px}
+#stp-office .qp-listen-group{display:flex;align-items:center;justify-content:flex-end;gap:10px;min-width:0}
+#stp-office .qp-reading-top .qp-silent-hint{margin:0;text-align:right}
+#stp-office .qp-has-reading .qp-reading-top .qp-listen{margin:0}
+#stp-office .qp-reading-top .qp-selection{justify-self:start}
+@media(max-width:600px){#stp-office .qp-reading-top{gap:5px;padding:0 0 7px}#stp-office .qp-reading-top #qp-settings>summary{font-size:9px;padding:2px 0}#stp-office .qp-reading-top #qp-settings>summary span{font-size:13px;margin-right:2px}#stp-office .qp-reading-top .qp-selection,#stp-office .qp-reading-top .qp-service{width:100%;min-width:0}#stp-office .qp-reading-top .qp-service select{width:100%;max-width:100%;font-size:12px;padding-left:0;padding-right:0}#stp-office .qp-listen-group{gap:5px}#stp-office .qp-reading-top .qp-silent-hint{max-width:70px;font-size:8px;white-space:normal;line-height:1.4}#stp-office .qp-reading-top #qp-resume-follow{font-size:9px;padding:3px}}
 </style>
 <script>
 (function(){'use strict';
@@ -290,6 +305,7 @@ const mast=document.createElement('div');mast.className='qp-mast';['.qp-top','.q
 const calendar=document.createElement('div');calendar.className='qp-calendar';const intro=mast.querySelector('.qp-intro');calendar.appendChild(section.querySelector('#qp-date-mount'));calendar.appendChild(mast.querySelector('.qp-liturgy'));controls.insertBefore(calendar,controls.querySelector('.qp-listen'));
 const dateStack=document.createElement('div');dateStack.className='qp-date-stack';calendar.before(dateStack);dateStack.appendChild(calendar);dateStack.appendChild(section.querySelector('#qp-settings'));
 const readingTop=section.querySelector('.qp-reading-top');readingTop.querySelector('#qp-reading-title').hidden=true;readingTop.prepend(section.querySelector('.qp-selection'));readingTop.appendChild(section.querySelector('.qp-listen'));
+const listenGroup=document.createElement('div');listenGroup.className='qp-listen-group';listenGroup.appendChild(readingTop.querySelector('.qp-silent-hint'));listenGroup.appendChild(readingTop.querySelector('#qp-resume-follow'));listenGroup.appendChild(readingTop.querySelector('.qp-listen'));readingTop.appendChild(section.querySelector('#qp-settings'));readingTop.appendChild(listenGroup);
 root.prepend(section);
 const legacy=$('qp-legacy');oldNodes.forEach(node=>{if(!['STYLE','SCRIPT','NOSCRIPT'].includes(node.tagName))legacy.appendChild(node);});
 // Move the existing controls so their calendar and prayer-journal behavior stays intact.
