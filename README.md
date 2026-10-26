@@ -17,3 +17,11 @@ Releases are tagged `office-YYYY-MM-DD`. Assets use `<office>-<rite>-<voice>.mp3
 ## Sources
 
 Prayers: Book of Common Prayer (1979), The Episcopal Church. Public-domain scripture text and dated prayer text supplied by [Gracelight](https://usedailyoffice.com/1979/). The listening version can differ from the embedded Forward Movement prayer window. Voices are AI-generated using [Kokoro](https://github.com/hexgrad/kokoro), whose model weights are Apache licensed.
+
+## Quiet daily prayer experience
+
+The public page is a place for daily prayer and scripture, with the reassuring heading “Be still. God is near.” Warm ivory and candlelight colors frame a minimal opening: date, service selector, liturgical season, and Begin prayer. Site navigation and the footer are hidden only on this prayer page; a small church link returns home. Prayer settings starts closed and contains voice, pace, text size, Rite I/II, playback position, additional prayer resources, and the existing local prayer journal.
+
+Starting playback reveals the exact transcript used to generate the selected recording. Stored timing cues highlight passages and gently scroll within the reading panel, rather than moving the whole page. Manual wheel, touch, or keyboard scrolling pauses following; Follow the reading returns to the current passage. Reduced-motion preferences disable smooth scrolling. Date, service, rite, and voice changes stop the current audio and load the matching recording. Reading completion offers an optional Mark this time as prayed action; it does not automatically record a prayer.
+
+The WordPress integration keeps a reusable MP3 copy on the church domain for phone playback. All public listening controls use saved recordings. They never dispatch generation jobs, create new speech, or modify the daily recording schedule. Preserve this quiet opening and keep generation controls out of the public prayer experience.
