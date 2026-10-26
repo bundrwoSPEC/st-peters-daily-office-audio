@@ -215,6 +215,15 @@ body.stp-prayer-space{background-color:#315b72!important;background-image:linear
 #stp-office .qp-controls,#stp-office .qp-has-reading .qp-controls{justify-content:space-between;width:100%;flex-wrap:nowrap}
 #stp-office .qp-controls .qp-selection{justify-content:flex-start}
 #stp-office .qp-controls .qp-listen{margin-left:auto;flex-shrink:0}
+
+/* Center the liturgical date alongside selection and playback. */
+#stp-office .qp-intro h1,#stp-office .qp-has-reading .qp-intro h1{font-weight:700!important;margin:2px auto 7px!important}
+#stp-office .qp-controls,#stp-office .qp-has-reading .qp-controls{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:12px;margin-top:0}
+#stp-office .qp-controls .qp-calendar{margin:0;padding:0 10px 5px}
+#stp-office .qp-controls .qp-listen{justify-self:end;margin:0}
+#stp-office .qp-controls .qp-selection{min-width:0}
+#stp-office .qp-mast{padding-bottom:4px!important}
+@media(max-width:600px){#stp-office .qp-controls,#stp-office .qp-has-reading .qp-controls{grid-template-columns:minmax(0,1fr) 138px 38px;gap:6px}#stp-office .qp-controls .qp-calendar{width:138px;padding:0 3px 4px}#stp-office .qp-controls #qp-date-mount #office-date{width:128px;font-size:14px!important;padding:3px 2px!important;min-height:32px}#stp-office .qp-controls .qp-liturgy{font-size:9px;gap:0;line-height:1.35}#stp-office .qp-controls .qp-service{width:100%;min-width:0;gap:0}#stp-office .qp-controls .qp-list{display:none}#stp-office .qp-controls .qp-service select{width:100%;min-width:0;font-size:13px;padding:5px 0}#stp-office .qp-controls #qp-play{width:38px;height:38px;min-height:38px}#stp-office .qp-intro h1,#stp-office .qp-has-reading .qp-intro h1{margin:2px auto 7px!important}}
 </style>
 <script>
 (function(){'use strict';
@@ -240,7 +249,7 @@ section.innerHTML=`
 <div class="qp-listen"><button type="button" id="qp-play" disabled><span id="qp-play-icon" aria-hidden="true">▶</span><span id="qp-play-label">Preparing prayer…</span></button><p id="stp-natural-status" class="qp-sr" role="status">Preparing your prayer.</p></div>
 <div id="qp-reading"><div class="qp-reading-top"><p id="qp-reading-title"></p><span class="qp-silent-hint">Read silently, or listen.</span><button type="button" id="qp-resume-follow" hidden>Follow the reading</button></div><div id="stp-natural-text" class="qp-scroll" tabindex="0" aria-label="Prayer text, highlighted with the recording"></div><div id="qp-finish" hidden><p>Go in peace. Carry this stillness with you.</p><button type="button" id="qp-record-prayer">Mark this time as prayed</button></div></div>`;
 const mast=document.createElement('div');mast.className='qp-mast';['.qp-top','.qp-intro','.qp-liturgy'].forEach(selector=>mast.appendChild(section.querySelector(selector)));const controls=document.createElement('div');controls.className='qp-controls';['.qp-selection','.qp-listen'].forEach(selector=>controls.appendChild(section.querySelector(selector)));mast.appendChild(controls);section.prepend(mast);
-const calendar=document.createElement('div');calendar.className='qp-calendar';const intro=mast.querySelector('.qp-intro');calendar.appendChild(section.querySelector('#qp-date-mount'));calendar.appendChild(mast.querySelector('.qp-liturgy'));intro.appendChild(calendar);
+const calendar=document.createElement('div');calendar.className='qp-calendar';const intro=mast.querySelector('.qp-intro');calendar.appendChild(section.querySelector('#qp-date-mount'));calendar.appendChild(mast.querySelector('.qp-liturgy'));controls.insertBefore(calendar,controls.querySelector('.qp-listen'));
 root.prepend(section);
 const legacy=$('qp-legacy');oldNodes.forEach(node=>{if(!['STYLE','SCRIPT','NOSCRIPT'].includes(node.tagName))legacy.appendChild(node);});
 // Move the existing controls so their calendar and prayer-journal behavior stays intact.
