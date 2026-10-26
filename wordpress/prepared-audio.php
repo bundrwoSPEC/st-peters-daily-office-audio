@@ -277,6 +277,10 @@ body.stp-prayer-space{background-color:#315b72!important;background-image:linear
 #stp-office .qp-has-reading .qp-reading-top .qp-listen{margin:0}
 #stp-office .qp-reading-top .qp-selection{justify-self:start}
 @media(max-width:600px){#stp-office .qp-reading-top{gap:5px;padding:0 0 7px}#stp-office .qp-reading-top #qp-settings>summary{font-size:9px;padding:2px 0}#stp-office .qp-reading-top #qp-settings>summary span{font-size:13px;margin-right:2px}#stp-office .qp-reading-top .qp-selection,#stp-office .qp-reading-top .qp-service{width:100%;min-width:0}#stp-office .qp-reading-top .qp-service select{width:100%;max-width:100%;font-size:12px;padding-left:0;padding-right:0}#stp-office .qp-listen-group{gap:5px}#stp-office .qp-reading-top .qp-silent-hint{max-width:70px;font-size:8px;white-space:normal;line-height:1.4}#stp-office .qp-reading-top #qp-resume-follow{font-size:9px;padding:3px}}
+
+/* Balance the date box between Daily Office and the settings row. */
+#stp-office .qp-intro h1,#stp-office .qp-has-reading .qp-intro h1{margin-bottom:16px!important}
+#stp-office .qp-controls,#stp-office .qp-has-reading .qp-controls{padding-bottom:7px}
 </style>
 <script>
 (function(){'use strict';
