@@ -242,6 +242,26 @@ body.stp-prayer-space{background-color:#315b72!important;background-image:linear
 #stp-office .qp-controls .qp-service select{border-bottom:0!important;max-width:150px}
 @media(max-width:600px){#stp-office .qp-controls,#stp-office .qp-has-reading .qp-controls{grid-template-columns:minmax(0,1fr) 138px minmax(0,1fr)}#stp-office .qp-controls .qp-selection{width:100%}#stp-office .qp-controls .qp-service select{max-width:100%}#stp-office .qp-controls .qp-selection:after{width:90px;max-width:85%}}
 @media(max-width:400px){#stp-office .qp-controls .qp-service select{font-size:12px}}
+
+/* Put prayer choice and optional listening immediately above the reading. */
+#stp-office .qp-intro h1:after{display:none}
+#stp-office .qp-intro h1,#stp-office .qp-has-reading .qp-intro h1{margin-bottom:14px!important}
+#stp-office .qp-controls,#stp-office .qp-has-reading .qp-controls{display:flex;justify-content:center}
+#stp-office .qp-date-stack{width:auto;margin-bottom:7px}
+#stp-office .qp-controls .qp-calendar{width:270px;max-width:100%;padding:5px 22px 10px}
+#stp-office .qp-controls #qp-date-mount #office-date{width:210px;min-height:38px;font-size:18px!important;padding:4px 8px!important}
+#stp-office .qp-controls .qp-liturgy{font-size:12px;line-height:1.5;margin-top:5px}
+#stp-office .qp-reading-top{display:flex;align-items:center;gap:12px;padding:2px 8px 9px}
+#stp-office .qp-reading-top .qp-selection{margin:0;justify-content:flex-start;flex-shrink:1;min-width:0}
+#stp-office .qp-reading-top .qp-selection:after{display:none}
+#stp-office .qp-reading-top .qp-service select{border:0!important;max-width:210px;min-height:40px;padding:5px 4px;font-size:15px}
+#stp-office .qp-reading-top .qp-listen{margin:0;flex-shrink:0}
+#stp-office .qp-reading-top .qp-silent-hint{margin-left:auto}
+#stp-office .qp-reading-top #qp-play{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;min-height:40px;padding:0;border:1px solid #fffdf8;border-radius:50%;background:transparent;color:#fffdf8!important;box-shadow:none}
+#stp-office .qp-reading-top #qp-play:hover{background:#ffffff18}
+#stp-office .qp-has-reading .qp-reading-top .qp-listen{margin-left:auto}
+#stp-office .qp-has-reading .qp-reading-top #qp-resume-follow:not([hidden])~.qp-listen{margin-left:0}
+@media(max-width:600px){#stp-office .qp-date-stack{width:auto}#stp-office .qp-controls .qp-calendar{width:250px;padding:5px 16px 10px}#stp-office .qp-controls #qp-date-mount #office-date{width:204px;font-size:17px!important}#stp-office .qp-controls .qp-liturgy{font-size:11px}#stp-office .qp-reading-top{gap:8px;padding-left:0;padding-right:0}#stp-office .qp-reading-top .qp-service{gap:0}#stp-office .qp-reading-top .qp-list{display:none}#stp-office .qp-reading-top .qp-service select{font-size:13px;max-width:150px}#stp-office .qp-reading-top .qp-silent-hint{font-size:9px;white-space:nowrap}#stp-office .qp-reading-top #qp-play{width:36px;height:36px;min-height:36px}}
 </style>
 <script>
 (function(){'use strict';
@@ -269,6 +289,7 @@ section.innerHTML=`
 const mast=document.createElement('div');mast.className='qp-mast';['.qp-top','.qp-intro','.qp-liturgy'].forEach(selector=>mast.appendChild(section.querySelector(selector)));const controls=document.createElement('div');controls.className='qp-controls';['.qp-selection','.qp-listen'].forEach(selector=>controls.appendChild(section.querySelector(selector)));mast.appendChild(controls);section.prepend(mast);
 const calendar=document.createElement('div');calendar.className='qp-calendar';const intro=mast.querySelector('.qp-intro');calendar.appendChild(section.querySelector('#qp-date-mount'));calendar.appendChild(mast.querySelector('.qp-liturgy'));controls.insertBefore(calendar,controls.querySelector('.qp-listen'));
 const dateStack=document.createElement('div');dateStack.className='qp-date-stack';calendar.before(dateStack);dateStack.appendChild(calendar);dateStack.appendChild(section.querySelector('#qp-settings'));
+const readingTop=section.querySelector('.qp-reading-top');readingTop.querySelector('#qp-reading-title').hidden=true;readingTop.prepend(section.querySelector('.qp-selection'));readingTop.appendChild(section.querySelector('.qp-listen'));
 root.prepend(section);
 const legacy=$('qp-legacy');oldNodes.forEach(node=>{if(!['STYLE','SCRIPT','NOSCRIPT'].includes(node.tagName))legacy.appendChild(node);});
 // Move the existing controls so their calendar and prayer-journal behavior stays intact.
