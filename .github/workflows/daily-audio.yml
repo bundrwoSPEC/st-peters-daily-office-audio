@@ -1,0 +1,84 @@
+name: Prepare Daily Office voices
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Optional starting date (YYYY-MM-DD); defaults to today in Brenham'
+        required: false
+        default: ''
+  schedule:
+    - cron: '17 8 * * *'
+  push:
+    paths:
+      - 'generate.py'
+      - 'requirements.txt'
+      - '.github/workflows/daily-audio.yml'
+permissions:
+  contents: read
+concurrency:
+  group: daily-office-audio
+  cancel-in-progress: false
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        include:
+          - {office: morning-prayer, rite: Rite-II}
+          - {office: morning-prayer, rite: Rite-I}
+          - {office: evening-prayer, rite: Rite-II}
+          - {office: evening-prayer, rite: Rite-I}
+          - {office: noonday-prayer, rite: Rite-II}
+          - {office: compline, rite: Rite-II}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Install speech engine
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y espeak-ng ffmpeg
+          pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt
+      - name: Prepare today and tomorrow
+        env:
+          REQUEST_DATE: ${{ inputs.date }}
+          OFFICE: ${{ matrix.office }}
+          RITE: ${{ matrix.rite }}
+        run: python generate.py --office "$OFFICE" --rite "$RITE" --date "$REQUEST_DATE"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: audio-${{ matrix.office }}-${{ matrix.rite }}
+          path: output/
+          retention-days: 3
+          if-no-files-found: error
+  publish:
+    needs: generate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: audio-*
+          merge-multiple: true
+          path: output
+      - name: Publish dated recordings
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          for folder in output/*; do
+            date=$(basename "$folder")
+            tag="office-$date"
+            if ! gh release view "$tag" >/dev/null 2>&1; then
+              gh release create "$tag" --title "Daily Office — $date" --notes 'Michael and Heart readings. BCP 1979; public-domain scripture text supplied by Gracelight. Synthetic speech generated with Kokoro. Prepared for St. Peter’s Episcopal Church, Brenham.' --latest=false
+            fi
+            gh release upload "$tag" "$folder"/*.mp3 "$folder"/*.json --clobber
+          done
