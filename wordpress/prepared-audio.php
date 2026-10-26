@@ -177,6 +177,30 @@ body.stp-prayer-space #wrap,body.stp-prayer-space #content,body.stp-prayer-space
 #stp-office .qp-scroll{background:linear-gradient(#fffdf8f5,#fffdf8f5),url('https://raw.githubusercontent.com/bundrwoSPEC/st-peters-daily-office-audio/99c41209589b9f4cd78702d7fa99b2a747b03102/assets/chasuble-brocade.webp');background-size:auto,460px auto}
 #stp-office .qp-text-open:not(.qp-has-reading) .qp-scroll,#stp-office .qp-has-reading .qp-scroll{height:calc(100svh - 310px);min-height:280px}
 @media(max-width:600px){#stp-office .qp-church{font-size:16px!important}#stp-office .qp-intro h1,#stp-office .qp-has-reading .qp-intro h1{font-size:25px!important;margin:8px 0 12px!important}#stp-office .qp-mast{padding:5px 8px 12px!important}#stp-office .qp-calendar{padding:3px 12px 9px;margin-bottom:9px}#stp-office .qp-text-open:not(.qp-has-reading) .qp-scroll,#stp-office .qp-has-reading .qp-scroll{height:calc(100svh - 295px);min-height:260px}}
+
+/* Compact parish identity and a more pronounced, continuous brocade. */
+body.stp-prayer-space{background-image:linear-gradient(#21495d8c,#21495d8c),url('https://raw.githubusercontent.com/bundrwoSPEC/st-peters-daily-office-audio/99c41209589b9f4cd78702d7fa99b2a747b03102/assets/chasuble-brocade.webp')!important;background-color:#21495d!important;background-blend-mode:normal,multiply!important;background-size:auto,580px auto!important}
+#stp-office #stp-natural-audio{padding-top:9px;padding-bottom:20px}
+#stp-office .qp-mast{padding:2px 18px 7px!important}
+#stp-office .qp-top,#stp-office .qp-has-reading .qp-top{grid-template-columns:66px minmax(0,1fr) 66px;gap:10px;min-height:70px}
+#stp-office .qp-shield-link{width:66px;height:70px}
+#stp-office .qp-shield-link img{width:51px;height:61px}
+#stp-office .qp-church{font-size:23px!important;font-weight:700;line-height:1.25;padding:0}
+#stp-office .qp-place{display:block;font:10px/1.6 'Libre Baskerville',Georgia,serif;letter-spacing:.12em;text-transform:uppercase;color:#f3e9d0;margin-top:4px}
+#stp-office #qp-settings>summary{font-size:10px;padding:1px 4px}
+#stp-office .qp-intro,#stp-office .qp-has-reading .qp-intro{padding:0!important}
+#stp-office .qp-intro h1,#stp-office .qp-has-reading .qp-intro h1{display:table;font-size:26px!important;margin:5px auto 8px!important;padding:0 20px 6px;border-bottom:2px solid #c9a14a}
+#stp-office .qp-calendar{padding:0 12px 5px;margin-bottom:4px}
+#stp-office #qp-date-mount #office-date{min-height:34px;padding:3px 10px!important;font-size:17px!important}
+#stp-office .qp-calendar .qp-liturgy{font-size:11px;line-height:1.4;min-height:17px}
+#stp-office .qp-controls,#stp-office .qp-has-reading .qp-controls{margin-top:3px;gap:14px}
+#stp-office .qp-controls #qp-play,#stp-office .qp-has-reading .qp-controls #qp-play{width:40px;height:40px;min-height:40px}
+#stp-office .qp-service select{min-height:38px;padding:5px 4px}
+#stp-office #qp-reading{padding-top:6px}
+#stp-office .qp-reading-top{padding-bottom:6px}
+#stp-office .qp-scroll{border:3px solid #c9a14a;box-shadow:0 0 0 1px #ecd8a2;border-radius:7px}
+#stp-office .qp-text-open:not(.qp-has-reading) .qp-scroll,#stp-office .qp-has-reading .qp-scroll{height:calc(100svh - 270px);min-height:280px}
+@media(max-width:600px){#stp-office #stp-natural-audio{padding-top:7px}#stp-office .qp-mast{padding:0 2px 5px!important}#stp-office .qp-top,#stp-office .qp-has-reading .qp-top{grid-template-columns:47px minmax(0,1fr) 47px;gap:7px;min-height:72px}#stp-office .qp-shield-link{width:47px;height:62px}#stp-office .qp-shield-link img{width:39px;height:48px}#stp-office .qp-church{font-size:17px!important;line-height:1.25}#stp-office .qp-place{font-size:8px;letter-spacing:.06em;margin-top:3px}#stp-office #qp-settings>summary{font-size:9px;padding:0 3px}#stp-office .qp-intro h1,#stp-office .qp-has-reading .qp-intro h1{font-size:23px!important;margin:4px auto 7px!important;padding-bottom:5px}#stp-office .qp-calendar{margin-bottom:3px}#stp-office .qp-text-open:not(.qp-has-reading) .qp-scroll,#stp-office .qp-has-reading .qp-scroll{height:calc(100svh - 275px);min-height:260px}}
 </style>
 <script>
 (function(){'use strict';
@@ -188,7 +212,7 @@ const oldNodes=Array.from(root.children),date=$('office-date'),oldServices=$('of
 const names={'morning-prayer':'Morning Prayer','noonday-prayer':'Noonday Prayer','evening-prayer':'Evening Prayer','compline':'Compline'};
 const section=document.createElement('section');section.id='stp-natural-audio';section.className='quiet-prayer qp-text-open';section.setAttribute('aria-label','A quiet space for daily prayer');
 section.innerHTML=`
-<div class="qp-top"><a class="qp-shield-link qp-shield-left" href="/the-story-of-our-st-peters-shield/" aria-label="St. Peter’s shield"><img src="https://stpetersbrenham.org/wp-content/uploads/2026/08/st-peters-shield.png" alt="St. Peter’s shield" width="56" height="64"></a><div class="qp-brand-center"><a class="qp-church" href="/">St. Peter’s · Brenham</a><details id="qp-settings"><summary><span aria-hidden="true">☷</span> Prayer settings</summary><div class="qp-options">
+<div class="qp-top"><a class="qp-shield-link qp-shield-left" href="/the-story-of-our-st-peters-shield/" aria-label="St. Peter’s shield"><img src="https://stpetersbrenham.org/wp-content/uploads/2026/08/st-peters-shield.png" alt="St. Peter’s shield" width="56" height="64"></a><div class="qp-brand-center"><a class="qp-church" href="/">St. Peter’s Episcopal Church</a><span class="qp-place">Brenham, Texas</span><details id="qp-settings"><summary><span aria-hidden="true">☷</span> Prayer settings</summary><div class="qp-options">
 <h2>Make this time your own</h2><div class="qp-fields"><label>Reading voice<select id="stp-natural-voice"><option value="michael">Michael</option><option value="heart">Heart</option></select></label><label>Reading pace<select id="stp-natural-speed"><option value="0.75">Slower · 0.75×</option><option value="1" selected>Natural · 1×</option><option value="1.25">Faster · 1.25×</option><option value="1.5">Fast · 1.5×</option></select></label><div id="qp-rite-mount"></div><label>Text size<select id="qp-text-size"><option value="regular">Comfortable</option><option value="large">Larger</option></select></label></div>
 <label class="qp-check"><input id="qp-follow" type="checkbox" checked> Gently follow the reading</label><p class="qp-note">The matching prayer text highlights a passage at a time. Scrolling by hand pauses following; use “Follow the reading” to return.</p>
 <div class="qp-actions"><button type="button" id="stp-natural-stop">Start from the beginning</button><button type="button" id="stp-natural-retry">Reload saved recording</button><button type="button" id="qp-show-text">Show prayer text</button></div>
