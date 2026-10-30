@@ -14,13 +14,19 @@ add_action('rest_api_init', function () {
             }
             if (in_array($office, array('noonday-prayer','compline'), true)) { $rite = 'Rite-II'; }
             $stem = $office . '-' . $rite . '-' . $voice;
-            $key = 'stp_prepared_3_' . md5($date . $stem);
+            $key = 'stp_prepared_4_' . md5($date . $stem);
             $cached = get_transient($key);
             if (is_array($cached)) { return rest_ensure_response($cached); }
             if ($cached === 'pending') { return new WP_Error('audio_pending', 'The natural recording is not prepared for this selection yet. You can wait for it or open the optional basic device voice below.', array('status'=>404)); }
             $base = 'https://github.com/bundrwoSPEC/st-peters-daily-office-audio/releases/download/office-' . $date . '/';
-            $response = wp_remote_get($base . $stem . '.json', array('timeout'=>20, 'redirection'=>4, 'limit_response_size'=>600000));
-            $data = is_wp_error($response) ? null : json_decode(wp_remote_retrieve_body($response), true);
+            $guide_response = wp_remote_get($base . $stem . '-guide-v1.json', array('timeout'=>20, 'redirection'=>4, 'limit_response_size'=>600000));
+            $data = is_wp_error($guide_response) ? null : json_decode(wp_remote_retrieve_body($guide_response), true);
+            if (is_array($data) && isset($data['companion_version']) && $data['companion_version'] === 1) {
+                $stem .= '-guide-v1';
+            } else {
+                $response = wp_remote_get($base . $stem . '.json', array('timeout'=>20, 'redirection'=>4, 'limit_response_size'=>600000));
+                $data = is_wp_error($response) ? null : json_decode(wp_remote_retrieve_body($response), true);
+            }
             $expected_rite = $rite === 'Rite-I' ? 'traditional' : 'contemporary';
             if (!is_array($data) || $data['date'] !== $date || $data['office'] !== $office || $data['voice'] !== $voice || $data['rite'] !== $expected_rite || !isset($data['blocks'], $data['cues'], $data['duration']) || !is_array($data['blocks']) || count($data['blocks']) < 8 || !is_array($data['cues']) || $data['duration'] <= 0) {
                 set_transient($key, 'pending', 2 * MINUTE_IN_SECONDS);
@@ -52,7 +58,7 @@ add_action('rest_api_init', function () {
                 chmod($file, 0644);
             }
             $data['audio_url'] = $uploads['baseurl'] . $relative . '/' . $stem . '.mp3';
-            set_transient($key, $data, HOUR_IN_SECONDS);
+            set_transient($key, $data, !empty($data['companion_version']) ? HOUR_IN_SECONDS : 30);
             return rest_ensure_response($data);
         }
     ));
@@ -330,12 +336,28 @@ function stop(){audio.pause();if(audio.readyState)audio.currentTime=0;}
 function tell(message,error){status.textContent=message;status.className=error?'qp-error':'qp-sr';}
 function playerState(){play.disabled=!ready;const running=!audio.paused&&!audio.ended;playLabel.textContent=running?'Pause listening':audio.ended?'Listen again':audio.currentTime>0?'Continue listening':ready?'Listen':'Preparing prayer…';playIcon.textContent=running?'Ⅱ':'▶';play.setAttribute('aria-label',playLabel.textContent);}
 function syncSelection(){const s=selection();service.value=s.office;$('qp-color').style.backgroundColor=date.style.backgroundColor;const cloth=date.closest('.date-group');cloth.style.setProperty('--qp-liturgical-color',date.style.backgroundColor||'#245842');cloth.style.setProperty('--qp-liturgical-text',date.style.color||'#ffffff');cloth.classList.toggle('qp-date-light',!date.classList.contains('dark-date'));const calendar=section.querySelector('.qp-calendar');calendar.style.setProperty('--qp-liturgical-color',date.style.backgroundColor||'#245842');calendar.style.setProperty('--qp-liturgical-text',date.style.color||'#ffffff');date.title=$('office-color').textContent;$('qp-reading-title').textContent=names[s.office];}
-function scrollToCue(force){if(!manifest||!follow.checked||manualScroll)return;const cue=manifest.cues[lastCue],el=cue&&text.children[cue.first];if(!el)return;const outer=text.getBoundingClientRect(),inner=el.getBoundingClientRect(),top=inner.top-outer.top+text.scrollTop;const target=Math.max(0,top-text.clientHeight*0.3);if(force||inner.top<outer.top+28||inner.bottom>outer.bottom-45){programScrollUntil=performance.now()+1000;text.scrollTo({top:target,behavior:reduced?'auto':'smooth'});}}
-function highlight(force){if(!manifest)return;const n=manifest.cues.findIndex(c=>audio.currentTime>=c.start&&audio.currentTime<c.end);if(n===lastCue&&!force)return;lastCue=n;const cue=manifest.cues[n];Array.from(text.children).forEach((el,i)=>{const active=!!cue&&i>=cue.first&&i<=cue.last;el.classList.toggle('being-read',active);if(active)el.setAttribute('aria-current','true');else el.removeAttribute('aria-current');});scrollToCue(force);}
-function manual(){if(!audio.paused&&follow.checked){manualScroll=true;resume.hidden=false;}}
-text.addEventListener('wheel',manual,{passive:true});text.addEventListener('touchmove',manual,{passive:true});text.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].includes(e.key))manual();});text.addEventListener('pointerdown',e=>{if(e.clientX>text.getBoundingClientRect().right-18)manual();});
-resume.onclick=()=>{manualScroll=false;resume.hidden=true;follow.checked=true;highlight(true);};follow.onchange=()=>{manualScroll=false;resume.hidden=true;if(follow.checked)highlight(true);};
-async function refresh(force){syncSelection();const selected=selection(),key=JSON.stringify(selected);if(key===lastKey&&!force)return;lastKey=key;const current=++version;if(controller)controller.abort();controller=new AbortController();ready=false;stop();audio.removeAttribute('src');audio.load();manifest=null;lastCue=-1;text.replaceChildren();reading.hidden=false;section.classList.remove('qp-has-reading');$('qp-finish').hidden=true;$('qp-record-prayer').disabled=$('office-complete').disabled;$('qp-record-prayer').textContent=$('office-complete').disabled?'This time is recorded ✓':'Mark this time as prayed';manualScroll=false;resume.hidden=true;playerState();tell('Preparing your prayer.');try{const response=await fetch('/wp-json/stp-office/v1/prepared-audio?delivery=3&'+new URLSearchParams(selected),{signal:controller.signal});let data=await response.json();if(current!==version)return;if(!response.ok){const textResponse=await fetch('/wp-json/stp-office/v1/narration?'+new URLSearchParams({date:selected.date,office:selected.office,rite:selected.rite}),{signal:controller.signal});data=await textResponse.json();if(current!==version)return;if(!textResponse.ok)throw Error(data.message||'This prayer text could not load. Please try another date.');data.voice=selected.voice;data.cues=[];}if(data.date!==selected.date||data.office!==selected.office||data.voice!==selected.voice||!Array.isArray(data.blocks)||!Array.isArray(data.cues))throw Error('The recording did not match this prayer. Please try again.');manifest=data;data.blocks.forEach(b=>{const el=document.createElement(b.kind==='heading'?'h2':'p');el.textContent=b.text;text.appendChild(el);});if(data.audio_url)audio.src=data.audio_url;audio.playbackRate=Number(speed.value);ready=!!data.audio_url;reading.hidden=false;playerState();if(ready)tell('Your prayer is ready. Read silently, or press Listen.');else{playLabel.textContent='Recording not ready';tell('You can read this prayer silently now. Its recording has not been prepared yet.',true);}}catch(e){if(current!==version||e.name==='AbortError')return;playLabel.textContent='Prayer not ready';tell(e.message||'Your recording could not load. Open Prayer settings to reload it.',true);}}
+let followTimer=0;
+function scrollToCue(force){
+ if(!manifest||!follow.checked||manualScroll)return;
+ const cue=manifest.cues[lastCue],first=cue&&text.children[cue.first],last=cue&&text.children[cue.last];if(!first||!last)return;
+ const box=text.getBoundingClientRect(),start=first.getBoundingClientRect(),end=last.getBoundingClientRect();
+ const viewport=window.visualViewport,visibleTop=Math.max(box.top+text.clientTop,viewport?viewport.offsetTop:0),visibleBottom=Math.min(box.bottom,(viewport?viewport.offsetTop+viewport.height:window.innerHeight));
+ const visibleHeight=visibleBottom-visibleTop;if(visibleHeight<60)return;
+ const progress=Math.max(0,Math.min(1,(audio.currentTime-cue.start)/Math.max(.1,cue.end-cue.start)));
+ const point=start.top+Math.max(0,end.bottom-start.top-32)*progress;
+ const upper=visibleTop+Math.min(28,visibleHeight*.1),lower=visibleBottom-Math.min(55,visibleHeight*.2);
+ if(force||point<upper||point>lower){
+  const target=Math.max(0,Math.min(text.scrollHeight-text.clientHeight,text.scrollTop+point-visibleTop-visibleHeight*.3));
+  if(Math.abs(target-text.scrollTop)>2)text.scrollTo({top:target,behavior:reduced?'auto':'smooth'});
+ }
+}
+function highlight(force){if(!manifest)return;const n=manifest.cues.findIndex(c=>audio.currentTime>=c.start&&audio.currentTime<c.end);if(n!==lastCue||force){lastCue=n;const cue=manifest.cues[n];Array.from(text.children).forEach((el,i)=>{const active=!!cue&&i>=cue.first&&i<=cue.last;el.classList.toggle('being-read',active);if(active)el.setAttribute('aria-current','true');else el.removeAttribute('aria-current');});}scrollToCue(force);}
+function resumeFollowing(){clearTimeout(followTimer);manualScroll=false;resume.hidden=true;if(follow.checked)highlight(true);}
+function manual(){if(!audio.paused&&follow.checked){manualScroll=true;resume.hidden=false;clearTimeout(followTimer);followTimer=setTimeout(resumeFollowing,5000);}}
+text.addEventListener('wheel',manual,{passive:true});text.addEventListener('touchmove',manual,{passive:true});text.addEventListener('touchend',()=>{if(manualScroll){clearTimeout(followTimer);followTimer=setTimeout(resumeFollowing,5000);}},{passive:true});text.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].includes(e.key))manual();});text.addEventListener('pointerdown',e=>{if(e.clientX>text.getBoundingClientRect().right-18)manual();});
+resume.onclick=()=>{follow.checked=true;resumeFollowing();};follow.onchange=resumeFollowing;
+window.addEventListener('resize',()=>{if(!audio.paused)highlight(true);});
+async function refresh(force){syncSelection();const selected=selection(),key=JSON.stringify(selected);if(key===lastKey&&!force)return;lastKey=key;const current=++version;if(controller)controller.abort();controller=new AbortController();ready=false;companionClear();stop();audio.removeAttribute('src');audio.load();manifest=null;lastCue=-1;text.replaceChildren();reading.hidden=false;section.classList.remove('qp-has-reading');$('qp-finish').hidden=true;$('qp-record-prayer').disabled=$('office-complete').disabled;$('qp-record-prayer').textContent=$('office-complete').disabled?'This time is recorded ✓':'Mark this time as prayed';manualScroll=false;resume.hidden=true;playerState();tell('Preparing your prayer.');try{const response=await fetch('/wp-json/stp-office/v1/prepared-audio?delivery=4&'+new URLSearchParams(selected),{signal:controller.signal});let data=await response.json();if(current!==version)return;if(!response.ok){const textResponse=await fetch('/wp-json/stp-office/v1/narration?'+new URLSearchParams({date:selected.date,office:selected.office,rite:selected.rite}),{signal:controller.signal});data=await textResponse.json();if(current!==version)return;if(!textResponse.ok)throw Error(data.message||'This prayer text could not load. Please try another date.');data.voice=selected.voice;data.cues=[];}if(data.date!==selected.date||data.office!==selected.office||data.voice!==selected.voice||!Array.isArray(data.blocks)||!Array.isArray(data.cues))throw Error('The recording did not match this prayer. Please try again.');manifest=data;companionRender();data.blocks.forEach(b=>{const el=document.createElement(b.kind==='heading'?'h2':'p');el.textContent=b.text;text.appendChild(el);});if(data.audio_url)audio.src=data.audio_url;audio.playbackRate=Number(speed.value);ready=!!data.audio_url;reading.hidden=false;playerState();if(ready)tell('Your prayer is ready. Read silently, or press Listen.');else{playLabel.textContent='Recording not ready';tell('You can read this prayer silently now. Its recording has not been prepared yet.',true);}}catch(e){if(current!==version||e.name==='AbortError')return;playLabel.textContent='Prayer not ready';tell(e.message||'Your recording could not load. Open Prayer settings to reload it.',true);}}
 play.onclick=()=>{if(!ready)return;if(!audio.paused){audio.pause();return;}if(audio.ended)audio.currentTime=0;reading.hidden=false;section.classList.add('qp-has-reading');settings.open=false;manualScroll=false;resume.hidden=true;const promise=audio.play();if(promise)promise.catch(()=>{tell('Please try Listen again. You can also reload the saved recording in Prayer settings.',true);playerState();});};
 audio.addEventListener('play',()=>{if(window.speechSynthesis)window.speechSynthesis.cancel();reading.hidden=false;section.classList.add('qp-has-reading');playerState();tell('Reading '+manifest.title+' with '+(voice.value==='heart'?'Heart':'Michael')+'.');highlight(true);});audio.addEventListener('pause',playerState);audio.addEventListener('ended',()=>{playerState();$('qp-finish').hidden=false;tell('Prayer complete. Go in peace.');});audio.addEventListener('error',()=>{if(!ready)return;tell('This recording could not play. Open Prayer settings and choose Reload saved recording, or try the other voice.',true);playerState();});audio.addEventListener('timeupdate',()=>highlight(false));audio.addEventListener('seeked',()=>highlight(true));
 voice.onchange=()=>{try{localStorage.setItem('stp-natural-voice',voice.value);}catch(e){}refresh(true);};speed.onchange=()=>{audio.playbackRate=Number(speed.value);};$('qp-text-size').onchange=()=>{sizeText();try{localStorage.setItem('stp-prayer-text-size',$('qp-text-size').value);}catch(e){}highlight(true);};
@@ -343,6 +365,70 @@ $('stp-natural-stop').onclick=()=>{stop();playerState();manualScroll=false;highl
 service.onchange=()=>{const button=Array.from(oldServices.querySelectorAll('button')).find(b=>b.dataset.office===service.value);if(button)button.click();settings.open=false;};
 ['office-date','office-rite'].forEach(id=>$(id).addEventListener('change',()=>queueMicrotask(()=>refresh(false))));['office-prev','office-today','office-next','office-services'].forEach(id=>$(id).addEventListener('click',()=>queueMicrotask(()=>refresh(false))));
 const dayObserver=new MutationObserver(()=>{syncSelection();const current=selection();if(JSON.stringify(current)!==lastKey)refresh(false);});dayObserver.observe($('office-heading'),{childList:true,characterData:true,subtree:true});
+// Included inside the existing Daily Office player closure.
+const companion=document.createElement('section');
+companion.id='qp-companion';
+companion.innerHTML=`<details id="qp-study"><summary>Reflection and guide to this office</summary><p class="qp-note">AI-generated study commentary · separate from the Book of Common Prayer liturgy.</p><div id="qp-study-content" aria-live="polite"></div></details>
+<details id="qp-share-panel"><summary>Share or print this prayer</summary><div class="qp-share-options"><label><input id="qp-export-prayer" type="checkbox" checked> Prayer service</label><label><input id="qp-export-study" type="checkbox" checked> Reflection and section explanations</label><label><input id="qp-export-notes" type="checkbox" checked> Ruled lines for notes and thoughts</label></div><div class="qp-actions"><button type="button" id="qp-share">Share link</button><button type="button" id="qp-copy">Copy link</button><button type="button" id="qp-print">Print / Save as PDF</button></div><p class="qp-note">The link opens this date, service, and rite. Print or save a PDF to share the prayer and explanation together.</p><p id="qp-share-status" role="status"></p></details>`;
+reading.appendChild(companion);
+const companionStyle=document.createElement('style');
+companionStyle.textContent=`#stp-office #qp-companion{margin-top:18px;color:#21495d;background:#fffdf8;border:2px solid #c9a14a;border-radius:7px;padding:14px 18px;font:15px/1.7 Georgia,serif}#stp-office #qp-companion details+details{border-top:1px solid #c9a14a;margin-top:12px;padding-top:12px}#stp-office #qp-companion summary{cursor:pointer;font-weight:bold;min-height:36px}#stp-office #qp-companion h3{font:normal 20px/1.4 Georgia,serif;color:#21495d;margin:18px 0 5px}#stp-office #qp-companion p{margin:8px 0}#stp-office #qp-companion button{background:#21495d;color:#fffdf8;border:1px solid #c9a14a;border-radius:5px;padding:10px 14px;font:14px/1.4 Georgia,serif;min-height:44px}#stp-office .qp-share-options{display:grid;gap:8px;margin:12px 0}#stp-office .qp-share-options label{display:flex;align-items:center;gap:9px}#stp-office .qp-share-options input{width:18px;height:18px;margin:0;accent-color:#21495d}`;
+section.appendChild(companionStyle);
+const options=document.createElement('div');
+options.innerHTML='<label class="qp-check"><input id="qp-read-intro" type="checkbox" checked> Read the introduction</label><label class="qp-check"><input id="qp-read-study" type="checkbox"> Read the reflection and explanations after prayer</label><p class="qp-note">The introduction names the service, date, season or special day, and rite. Commentary begins only after the office has concluded. These options use the prepared Michael or Heart recording.</p>';
+settings.querySelector('.qp-options').insertBefore(options,settings.querySelector('.qp-actions'));
+let companionStopped=false;
+for(const id of ['qp-read-intro','qp-read-study']){
+ try{const saved=localStorage.getItem(id);if(saved!==null)$(id).checked=saved==='true';}catch(e){}
+ $(id).onchange=()=>{try{localStorage.setItem(id,String($(id).checked));}catch(e){}};
+}
+function companionClear(){companionStopped=false;$('qp-study-content').replaceChildren();$('qp-share-status').textContent='';}
+function companionRender(){
+ const target=$('qp-study-content');target.replaceChildren();
+ if(!manifest)return;
+ const study=manifest.study;
+ if(study){
+  const p=document.createElement('p');p.textContent=study.summary;target.appendChild(p);
+  for(const item of study.sections||[]){const h=document.createElement('h3'),p=document.createElement('p');h.textContent=item.title;p.textContent=item.text;target.append(h,p);}
+ }else{const p=document.createElement('p');p.textContent='The reflection and section guide are being prepared for this selection. The prayer text remains available. Use Reload saved recording in Prayer settings to check again.';target.appendChild(p);}
+}
+function companionTitle(){const s=selection();const name=s.office==='compline'?'Night Prayer (Compline)':names[s.office];const day=new Date(s.date+'T12:00:00Z').toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric',timeZone:'UTC'});const rite=['morning-prayer','evening-prayer'].includes(s.office)?(s.rite==='Rite-I'?'Rite I':'Rite II'):'Book of Common Prayer';return name+' · '+day+' · '+rite;}
+function companionLink(){const u=new URL(location.pathname,location.origin),s=selection();for(const k of ['date','office','rite'])u.searchParams.set(k,s[k]);if($('qp-export-study').checked)u.searchParams.set('study','1');return u.href;}
+const escapePrint=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+$('qp-copy').onclick=async()=>{try{await navigator.clipboard.writeText(companionLink());$('qp-share-status').textContent='Link copied.';}catch(e){$('qp-share-status').textContent='Copy this link: '+companionLink();}};
+$('qp-share').onclick=async()=>{if(!navigator.share){$('qp-copy').click();return;}try{await navigator.share({title:companionTitle(),text:'Join me in the Daily Office at St. Peter’s Episcopal Church.',url:companionLink()});$('qp-share-status').textContent='Sharing finished.';}catch(e){if(e.name!=='AbortError')$('qp-share-status').textContent='Sharing could not open. Use Copy link instead.';}};
+$('qp-print').onclick=()=>{
+ if(!manifest){$('qp-share-status').textContent='Please wait for the selected prayer text to load.';return;}
+ if(!$('qp-export-prayer').checked&&!$('qp-export-study').checked&&!$('qp-export-notes').checked){$('qp-share-status').textContent='Choose at least one item to print.';return;}
+ if($('qp-export-study').checked&&!manifest.study){$('qp-share-status').textContent='The reflection is still being prepared. Uncheck reflection to print the prayer now, or reload the saved recording later.';return;}
+ const win=window.open('','_blank');if(!win){$('qp-share-status').textContent='Allow this site to open the print preview, then try again.';return;}
+ const e=escapePrint,s=selection();let body='';
+ if($('qp-export-prayer').checked){const first=manifest.segments?manifest.segments.office_first:0,last=manifest.segments?manifest.segments.office_last:manifest.blocks.length-1;body+='<section><h2>Daily Office</h2>'+manifest.blocks.slice(first,last+1).map(b=>'<'+(b.kind==='heading'?'h3':'p')+'>'+e(b.text)+'</'+(b.kind==='heading'?'h3':'p')+'>').join('')+'</section>';}
+ if($('qp-export-study').checked){const study=manifest.study;body+='<section class="study"><h2>Reflection and guide to this office</h2><p class="small">'+e(study.label)+'</p><p>'+e(study.summary)+'</p>'+(study.sections||[]).map(x=>'<h3>'+e(x.title)+'</h3><p>'+e(x.text)+'</p>').join('')+'</section>';}
+ if($('qp-export-notes').checked)body+='<section class="notes"><h2>My Notes and Thoughts</h2><p>What stood out? What might I carry into today?</p>'+Array.from({length:14},()=>'<div class="line"></div>').join('')+'</section>';
+ const shields=Array.from(section.querySelectorAll('.qp-shield-link img'));
+ const season=$('office-season').textContent,observance=$('office-observance').textContent;
+ win.document.open();win.document.write('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+e(companionTitle())+'</title><style>@page{size:letter;margin:.65in}*{box-sizing:border-box}body{max-width:760px;margin:24px auto;padding:0 20px;font:12pt/1.55 Georgia,serif;color:#142f3c}header{display:flex;align-items:center;justify-content:space-between;gap:16px;border-top:4px solid #21495d;border-bottom:2px solid #c9a14a;padding:14px 0;text-align:center}header img{width:48px;height:60px;object-fit:contain}header div{flex:1}h1{font-size:20pt;margin:0}h2{font-size:17pt;border-bottom:1px solid #c9a14a;margin-top:24px}h3{font-size:13pt;margin-bottom:4px;break-after:avoid}p{margin:7px 0;orphans:3;widows:3}.small,footer{font-size:9pt}section.study{break-before:page}.notes{break-before:page}.line{height:.35in;border-bottom:1px solid #aaa;break-inside:avoid}footer{border-top:1px solid #c9a14a;margin-top:20px;padding-top:8px;overflow-wrap:anywhere}.print-controls{text-align:center;padding:20px}.print-controls button{padding:12px 18px;background:#21495d;color:white;border:1px solid #c9a14a;font:16px Georgia}@media print{body{margin:0;padding:0;max-width:none}.print-controls{display:none}}</style></head><body><div class="print-controls"><button onclick="window.print()">Print / Save as PDF</button></div><header>'+(shields[0]?'<img src="'+e(shields[0].src)+'" alt="St. Peter’s shield">':'')+'<div><h1>St. Peter’s Episcopal Church</h1><div>Brenham, Texas</div></div>'+(shields[1]?'<img src="'+e(shields[1].src)+'" alt="Episcopal shield">':'')+'</header><p><strong>'+e(companionTitle())+'</strong><br>'+e([season,observance].filter(Boolean).join(' · '))+'</p>'+body+'<footer>'+e(manifest.attribution||'Book of Common Prayer (1979). Scripture supplied by Gracelight.')+'<br>'+e(companionLink())+'</footer></body></html>');win.document.close();
+ $('qp-share-status').textContent='Print preview opened. Use its Print / Save as PDF button.';
+};
+audio.addEventListener('play',()=>{
+ if(!manifest||!manifest.timing)return;
+ if(companionStopped){audio.currentTime=$('qp-read-intro').checked?0:manifest.timing.office_start;companionStopped=false;}
+ if(!$('qp-read-intro').checked&&audio.currentTime<manifest.timing.office_start)audio.currentTime=manifest.timing.office_start;
+});
+audio.addEventListener('timeupdate',()=>{
+ if(!manifest||!manifest.timing||audio.paused||$('qp-read-study').checked)return;
+ if(audio.currentTime>=manifest.timing.study_start){audio.pause();companionStopped=true;playerState();playLabel.textContent='Listen again';play.setAttribute('aria-label','Listen again');$('qp-finish').hidden=false;tell('Prayer complete. The optional reflection and guide are below.');}
+});
+const sharedSelection=new URLSearchParams(location.search);
+if(/^\d{4}-\d{2}-\d{2}$/.test(sharedSelection.get('date')||'')){
+ const candidate=sharedSelection.get('date'),parsed=new Date(candidate+'T12:00:00Z');
+ if(!isNaN(parsed)&&parsed.toISOString().slice(0,10)===candidate&&Math.abs(Date.now()-parsed.getTime())<3*366*86400000){date.value=candidate;date.dispatchEvent(new Event('change',{bubbles:true}));}
+}
+if(['Rite-I','Rite-II'].includes(sharedSelection.get('rite'))){$('office-rite').value=sharedSelection.get('rite');$('office-rite').dispatchEvent(new Event('change',{bubbles:true}));}
+if(names[sharedSelection.get('office')]){const button=Array.from(oldServices.querySelectorAll('button')).find(b=>b.dataset.office===sharedSelection.get('office'));if(button)button.click();}
+if(sharedSelection.get('study')==='1')$('qp-study').open=true;
+
 window.addEventListener('pagehide',stop);setInterval(()=>{if(!ready)refresh(true);},120000);refresh(false);
 })();
 </script>

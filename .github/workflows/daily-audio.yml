@@ -11,6 +11,7 @@ on:
   push:
     paths:
       - 'generate.py'
+      - 'study.py'
       - 'requirements.txt'
       - '.github/workflows/daily-audio.yml'
 permissions:
