@@ -375,7 +375,7 @@ const companionStyle=document.createElement('style');
 companionStyle.textContent=`#stp-office #qp-companion{margin-top:18px;color:#21495d;background:#fffdf8;border:2px solid #c9a14a;border-radius:7px;padding:14px 18px;font:15px/1.7 Georgia,serif}#stp-office #qp-companion details+details{border-top:1px solid #c9a14a;margin-top:12px;padding-top:12px}#stp-office #qp-companion summary{cursor:pointer;font-weight:bold;min-height:36px}#stp-office #qp-companion h3{font:normal 20px/1.4 Georgia,serif;color:#21495d;margin:18px 0 5px}#stp-office #qp-companion p{margin:8px 0}#stp-office #qp-companion button{background:#21495d;color:#fffdf8;border:1px solid #c9a14a;border-radius:5px;padding:10px 14px;font:14px/1.4 Georgia,serif;min-height:44px}#stp-office .qp-share-options{display:grid;gap:8px;margin:12px 0}#stp-office .qp-share-options label{display:flex;align-items:center;gap:9px}#stp-office .qp-share-options input{width:18px;height:18px;margin:0;accent-color:#21495d}`;
 section.appendChild(companionStyle);
 const options=document.createElement('div');
-options.innerHTML='<label class="qp-check"><input id="qp-read-intro" type="checkbox" checked> Read the introduction</label><label class="qp-check"><input id="qp-read-study" type="checkbox"> Read the reflection and explanations after prayer</label><p class="qp-note">The introduction names the service, date, season or special day, and rite. Commentary begins only after the office has concluded. These options use the prepared Michael or Heart recording.</p>';
+options.innerHTML='<label class="qp-check"><input id="qp-read-intro" type="checkbox" checked> Read the introduction</label><label class="qp-check"><input id="qp-read-study" type="checkbox"> Read the reflection and explanations after prayer</label><p class="qp-note">The introduction names the service, date, season or special day, and rite. Commentary begins only after the office has concluded. These options use the prepared Michael or Heart recording.</p><p class="qp-note" id="qp-companion-audio-status" role="status"></p>';
 settings.querySelector('.qp-options').insertBefore(options,settings.querySelector('.qp-actions'));
 let companionStopped=false;
 for(const id of ['qp-read-intro','qp-read-study']){
@@ -387,10 +387,14 @@ function companionRender(){
  const target=$('qp-study-content');target.replaceChildren();
  if(!manifest)return;
  const study=manifest.study;
+ const available=!!manifest.timing;
+ $('qp-read-intro').disabled=!available;$('qp-read-study').disabled=!available;
+ $('qp-companion-audio-status').textContent=available?'Introduction and commentary are ready for this recording.':'Introduction and commentary are not yet available for this recording.';
+ $('qp-export-study').disabled=!study;$('qp-export-study').checked=!!study;
  if(study){
   const p=document.createElement('p');p.textContent=study.summary;target.appendChild(p);
   for(const item of study.sections||[]){const h=document.createElement('h3'),p=document.createElement('p');h.textContent=item.title;p.textContent=item.text;target.append(h,p);}
- }else{const p=document.createElement('p');p.textContent='The reflection and section guide are being prepared for this selection. The prayer text remains available. Use Reload saved recording in Prayer settings to check again.';target.appendChild(p);}
+ }else{const p=document.createElement('p');p.textContent='The reflection and section guide are not yet available for this selection. The prayer text remains available. Use Reload saved recording in Prayer settings to check again.';target.appendChild(p);}
 }
 function companionTitle(){const s=selection();const name=s.office==='compline'?'Night Prayer (Compline)':names[s.office];const day=new Date(s.date+'T12:00:00Z').toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric',timeZone:'UTC'});const rite=['morning-prayer','evening-prayer'].includes(s.office)?(s.rite==='Rite-I'?'Rite I':'Rite II'):'Book of Common Prayer';return name+' · '+day+' · '+rite;}
 function companionLink(){const u=new URL(location.pathname,location.origin),s=selection();for(const k of ['date','office','rite'])u.searchParams.set(k,s[k]);if($('qp-export-study').checked)u.searchParams.set('study','1');return u.href;}
