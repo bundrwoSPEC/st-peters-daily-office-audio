@@ -6,19 +6,25 @@ from pathlib import Path
 from devotions import DEVOTIONS, devotion
 from publish import gh, release, require
 
-TAG = 'brief-devotions-v1'
+TAG = 'brief-devotions-v2'
 REPO = 'bundrwoSPEC/st-peters-daily-office-audio'
 
 
 def validate(folder):
-    expected = {f'{o}-{v}-brief-v1.{ext}' for o in DEVOTIONS for v in ('michael', 'heart') for ext in ('mp3', 'json')}
-    require({p.name for p in folder.iterdir()} == expected, 'Expected exactly 16 brief-devotion assets')
+    expected = {f'{o}-{v}-brief-v1{tail}' for o in DEVOTIONS for v in ('michael', 'heart') for tail in ('.mp3', '.json', '-prayer.mp3', '-prayer-only.mp3', '-without-intro.mp3')}
+    require({p.name for p in folder.iterdir()} == expected, 'Expected exactly 40 brief-devotion assets')
     for office in DEVOTIONS:
         for voice in ('michael', 'heart'):
             stem = f'{office}-{voice}-brief-v1'
             data = json.loads((folder / (stem + '.json')).read_text())
             source = devotion(office)
             require(all(data[k] == v for k, v in source.items()), 'Devotion text or structure mismatch')
+            require(set(data['listening']) == {'intro_prayer', 'prayer_only', 'prayer_guide', 'intro_prayer_guide'}, 'Missing listening variants')
+            for variant in data['listening'].values():
+                require(variant['file'] in expected and '/' not in variant['file'], 'Invalid listening filename')
+                clip = (folder / variant['file']).read_bytes()
+                require(len(clip) > 10000 and hashlib.sha256(clip).hexdigest() == variant['sha256'], 'Listening checksum mismatch')
+                require(variant['url'] == f"https://github.com/{REPO}/releases/download/{TAG}/{variant['file']}" and variant['duration'] > 0, 'Invalid listening URL or duration')
             require(data['voice'] == voice, 'Incorrect voice')
             require(data['audio_url'] == f'https://github.com/{REPO}/releases/download/{TAG}/{stem}.mp3', 'Incorrect recording URL')
             sound = (folder / (stem + '.mp3')).read_bytes()
@@ -55,7 +61,7 @@ def main():
         p = folder / a['name']
         require(a['size'] == p.stat().st_size and a.get('digest') == 'sha256:' + hashlib.sha256(p.read_bytes()).hexdigest(), 'Uploaded checksum mismatch')
     gh('release', 'edit', TAG, '--repo', REPO, '--draft=false', '--latest=false')
-    print('Published 16 validated brief-devotion assets')
+    print('Published 40 validated brief-devotion assets')
 
 
 if __name__ == '__main__':

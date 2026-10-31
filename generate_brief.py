@@ -8,7 +8,7 @@ from devotions import DEVOTIONS, devotion
 from generate import groups, VOICES
 
 REPO = 'bundrwoSPEC/st-peters-daily-office-audio'
-TAG = 'brief-devotions-v1'
+TAG = 'brief-devotions-v2'
 
 
 def main():
@@ -54,6 +54,17 @@ def main():
                         'audio_sha256': hashlib.sha256(mp3.read_bytes()).hexdigest(),
                         'generated_at': dt.datetime.now(dt.timezone.utc).isoformat(),
                         'audio_url': f'https://github.com/{REPO}/releases/download/{TAG}/{stem}.mp3', 'cues': cues}
+            listening = {}
+            for key, suffix, start, end in [
+                ('intro_prayer', 'prayer', 0, timing['study_start']),
+                ('prayer_only', 'prayer-only', timing['office_start'], timing['study_start']),
+                ('prayer_guide', 'without-intro', timing['office_start'], samples / 24000),
+            ]:
+                clip = folder / (stem + '-' + suffix + '.mp3')
+                subprocess.run(['ffmpeg', '-nostdin', '-y', '-loglevel', 'error', '-ss', str(start), '-i', str(mp3), '-t', str(end-start), '-codec:a', 'libmp3lame', '-b:a', '64k', str(clip)], check=True)
+                listening[key] = {'file': clip.name, 'url': f'https://github.com/{REPO}/releases/download/{TAG}/{clip.name}', 'sha256': hashlib.sha256(clip.read_bytes()).hexdigest(), 'duration': round(end-start, 3)}
+            listening['intro_prayer_guide'] = {'file': mp3.name, 'url': manifest['audio_url'], 'sha256': manifest['audio_sha256'], 'duration': manifest['duration']}
+            manifest['listening'] = listening
             (folder / (stem + '.json')).write_text(json.dumps(manifest, ensure_ascii=False), encoding='utf-8')
             print(f'{stem}: {samples / 24000:.0f} seconds', flush=True)
 
