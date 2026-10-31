@@ -7,6 +7,10 @@ import os
 from pathlib import Path
 import subprocess
 import time
+import random
+import ssl
+from email.utils import parsedate_to_datetime
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
@@ -17,16 +21,50 @@ REPO = "bundrwoSPEC/st-peters-daily-office-audio"
 VOICES = {"michael": "am_michael", "heart": "af_heart"}
 
 
+def retry_delay(attempt, headers=None):
+    # Bounded exponential backoff with jitter; respect a bounded Retry-After.
+    delay = min(120, 5 * 2 ** attempt) + random.uniform(0, 3)
+    value = headers.get("Retry-After") if headers else None
+    if value:
+        try:
+            seconds = float(value)
+        except ValueError:
+            try:
+                seconds = (parsedate_to_datetime(value) - dt.datetime.now(dt.timezone.utc)).total_seconds()
+            except (TypeError, ValueError, OverflowError):
+                seconds = 0
+        delay = max(delay, min(300, max(0, seconds)))
+    return delay
+
+
 def get_json(url):
-    for attempt in range(3):
+    for attempt in range(8):
         try:
             req = Request(url, headers={"User-Agent": "StPetersDailyOffice/1.0"})
             with urlopen(req, timeout=60) as response:
                 return json.load(response)
-        except Exception:
-            if attempt == 2:
+        except HTTPError as exc:
+            # Bad requests and authentication errors need a fix, not retries.
+            if exc.code not in (408, 429, 500, 502, 503, 504) or attempt == 7:
                 raise
-            time.sleep(3 * (attempt + 1))
+            delay = retry_delay(attempt, exc.headers)
+            reason = f"HTTP {exc.code}"
+        except (URLError, TimeoutError, ConnectionError) as exc:
+            if isinstance(exc, URLError) and isinstance(exc.reason, ssl.SSLCertVerificationError):
+                raise
+            if attempt == 7:
+                raise
+            delay = retry_delay(attempt)
+            reason = type(exc).__name__
+        print(f"Narration request: {reason}; retry {attempt + 2}/8 in {delay:.1f}s", flush=True)
+        time.sleep(delay)
+
+
+def validate_narration(data, date, office, rite):
+    expected_rite = "traditional" if rite == "Rite-I" else "contemporary"
+    if (data.get("date") != date or data.get("office") != office
+            or data.get("rite") != expected_rite or len(data.get("blocks", [])) < 8):
+        raise ValueError("The narration did not match the requested date, service and rite")
 
 
 def groups(blocks):
@@ -72,8 +110,7 @@ def main():
         date = day.isoformat()
         params = urlencode({"date": date, "office": args.office, "rite": args.rite})
         data = get_json("https://stpetersbrenham.org/wp-json/stp-office/v1/narration?" + params)
-        if data.get("date") != date or data.get("office") != args.office or len(data.get("blocks", [])) < 8:
-            raise ValueError("The narration did not match the requested date and service")
+        validate_narration(data, date, args.office, args.rite)
         study = make_study(data)
         prepared.append(enrich(data, study))
         print(f"Prepared reflection for {date} {args.office}", flush=True)
@@ -113,7 +150,7 @@ def main():
             if mp3.stat().st_size < 10000:
                 raise ValueError("Recording is unexpectedly short")
             boundaries = {name: next(c["start"] for c in cues if c["first"] >= index) for name, index in {"office_start": data["segments"]["office_first"], "study_start": data["segments"]["study_first"]}.items()}
-            manifest = {**data, "timing": boundaries, "voice": label, "duration": round(samples / 24000, 3), "text_sha256": digest, "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(), "audio_url": f"https://github.com/{REPO}/releases/download/office-{date}/{stem}.mp3", "cues": cues}
+            manifest = {**data, "timing": boundaries, "voice": label, "duration": round(samples / 24000, 3), "text_sha256": digest, "audio_sha256": hashlib.sha256(mp3.read_bytes()).hexdigest(), "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(), "audio_url": f"https://github.com/{REPO}/releases/download/office-{date}/{stem}.mp3", "cues": cues}
             (folder / (stem + ".json")).write_text(json.dumps(manifest, ensure_ascii=False), encoding="utf-8")
             print(f"Prepared {date} {stem}: {samples / 24000:.0f} seconds", flush=True)
 

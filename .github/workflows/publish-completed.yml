@@ -6,6 +6,13 @@ on:
         description: 'Generation run ID containing completed audio artifacts'
         required: true
         type: string
+      date:
+        description: 'Starting date used by the generation run (YYYY-MM-DD)'
+        required: true
+        type: string
+concurrency:
+  group: daily-office-audio
+  cancel-in-progress: false
 permissions:
   actions: read
   contents: write
@@ -13,6 +20,10 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
       - uses: actions/download-artifact@v4
         with:
           github-token: ${{ github.token }}
@@ -20,17 +31,9 @@ jobs:
           pattern: audio-*
           merge-multiple: true
           path: output
-      - name: Publish completed recordings
+      - name: Validate and publish complete dates
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: |
-          set -euo pipefail
-          for folder in output/*; do
-            date=$(basename "$folder")
-            tag="office-$date"
-            if ! gh release view "$tag" >/dev/null 2>&1; then
-              gh release create "$tag" --title "Daily Office — $date" --notes 'Michael and Heart readings. BCP 1979; public-domain scripture text supplied by Gracelight. Synthetic speech generated with Kokoro. Prepared for St. Peter’s Episcopal Church, Brenham.' --latest=false
-            fi
-            gh release upload "$tag" "$folder"/*.mp3 "$folder"/*.json --clobber
-          done
+          REQUEST_DATE: ${{ inputs.date }}
+        run: python publish.py --date "$REQUEST_DATE"

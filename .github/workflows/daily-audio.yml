@@ -9,9 +9,11 @@ on:
   schedule:
     - cron: '17 8 * * *'
   push:
+    branches: [main]
     paths:
       - 'generate.py'
       - 'study.py'
+      - 'publish.py'
       - 'requirements.txt'
       - '.github/workflows/daily-audio.yml'
 permissions:
@@ -20,7 +22,28 @@ concurrency:
   group: daily-office-audio
   cancel-in-progress: false
 jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      date: ${{ steps.date.outputs.date }}
+    steps:
+      - id: date
+        env:
+          REQUEST_DATE: ${{ inputs.date }}
+        run: |
+          python - <<'PYTHON'
+          import datetime as dt
+          import os
+          from zoneinfo import ZoneInfo
+          requested = os.environ.get('REQUEST_DATE', '')
+          date = dt.date.fromisoformat(requested) if requested else dt.datetime.now(ZoneInfo('America/Chicago')).date()
+          if requested and date.isoformat() != requested:
+              raise ValueError('Use YYYY-MM-DD')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+              out.write(f'date={date.isoformat()}\n')
+          PYTHON
   generate:
+    needs: plan
     runs-on: ubuntu-latest
     timeout-minutes: 100
     strategy:
@@ -48,38 +71,36 @@ jobs:
           pip install -r requirements.txt
       - name: Prepare today and tomorrow
         env:
-          REQUEST_DATE: ${{ inputs.date }}
+          REQUEST_DATE: ${{ needs.plan.outputs.date }}
           OFFICE: ${{ matrix.office }}
           RITE: ${{ matrix.rite }}
         run: python generate.py --office "$OFFICE" --rite "$RITE" --date "$REQUEST_DATE"
       - uses: actions/upload-artifact@v4
+        if: ${{ always() && !cancelled() }}
         with:
           name: audio-${{ matrix.office }}-${{ matrix.rite }}
           path: output/
           retention-days: 3
           if-no-files-found: error
   publish:
-    needs: generate
+    needs: [plan, generate]
+    if: ${{ always() && !cancelled() && needs.plan.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
       - uses: actions/download-artifact@v4
         with:
           pattern: audio-*
           merge-multiple: true
           path: output
-      - name: Publish dated recordings
+      - name: Validate and publish complete dates
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: |
-          set -euo pipefail
-          for folder in output/*; do
-            date=$(basename "$folder")
-            tag="office-$date"
-            if ! gh release view "$tag" >/dev/null 2>&1; then
-              gh release create "$tag" --title "Daily Office — $date" --notes 'Michael and Heart readings. BCP 1979; public-domain scripture text supplied by Gracelight. Synthetic speech generated with Kokoro. Prepared for St. Peter’s Episcopal Church, Brenham.' --latest=false
-            fi
-            gh release upload "$tag" "$folder"/*.mp3 "$folder"/*.json --clobber
-          done
+          REQUEST_DATE: ${{ needs.plan.outputs.date }}
+        run: python publish.py --date "$REQUEST_DATE"
