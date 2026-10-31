@@ -3,11 +3,28 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
+import publish_brief
 from devotions import DEVOTIONS, devotion
 from publish_brief import validate
 
 
 class BriefValidationTests(unittest.TestCase):
+    def test_unpublished_release_found_without_existing_tag(self):
+        draft = {'tag_name': publish_brief.TAG, 'draft': True, 'assets': []}
+        with patch.object(publish_brief, 'release_by_tag', return_value=None), patch.object(publish_brief, 'gh', return_value=json.dumps([draft])):
+            self.assertEqual(publish_brief.release(publish_brief.TAG), draft)
+
+    def test_missing_release_allows_first_generation(self):
+        with patch.object(publish_brief, 'release_by_tag', return_value=None), patch.object(publish_brief, 'gh', return_value='[]'):
+            self.assertIsNone(publish_brief.release(publish_brief.TAG))
+
+    def test_restore_rejects_unsafe_asset_path(self):
+        draft = {'assets': [{'name': '../escape.mp3', 'id': 1}]}
+        with tempfile.TemporaryDirectory() as directory, patch.object(publish_brief, 'release', return_value=draft):
+            with self.assertRaisesRegex(ValueError, 'Unsafe asset'):
+                publish_brief.restore(Path(directory))
+
     def fixture(self, folder):
         for office in DEVOTIONS:
             for voice in ('michael','heart'):

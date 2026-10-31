@@ -2,12 +2,44 @@
 import hashlib
 import json
 import math
+import argparse
+import os
+import subprocess
 from pathlib import Path
 from devotions import DEVOTIONS, devotion
-from publish import gh, release, require
+from publish import gh, release as release_by_tag, require
 
 TAG = 'brief-devotions-v2'
 REPO = 'bundrwoSPEC/st-peters-daily-office-audio'
+
+
+def release(tag):
+    found = release_by_tag(tag)
+    if found:
+        return found
+    # A draft whose tag has not been created is absent from the by-tag API.
+    page = 1
+    while True:
+        items = json.loads(gh('api', f'repos/{REPO}/releases?per_page=100&page={page}'))
+        found = next((item for item in items if item['tag_name'] == tag), None)
+        if found or len(items) < 100:
+            return found
+        page += 1
+
+
+def restore(folder):
+    existing = release(TAG)
+    if not existing:
+        return False
+    folder.mkdir(parents=True, exist_ok=True)
+    for asset in existing['assets']:
+        name = asset['name']
+        require(Path(name).name == name and name not in ('.', '..'), 'Unsafe asset name')
+        with (folder / name).open('wb') as output:
+            subprocess.run(['gh', 'api', f"repos/{REPO}/releases/assets/{asset['id']}",
+                            '-H', 'Accept: application/octet-stream'], stdout=output, check=True)
+    validate(folder)
+    return True
 
 
 def validate(folder):
@@ -45,7 +77,15 @@ def validate(folder):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--restore', action='store_true')
+    args = parser.parse_args()
     folder = Path('brief-output')
+    if args.restore:
+        ready = restore(folder)
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+            output.write(f'ready={str(ready).lower()}\n')
+        return
     expected = validate(folder)
     existing = release(TAG)
     if existing and not existing['draft']:

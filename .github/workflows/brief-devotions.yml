@@ -25,7 +25,13 @@ jobs:
         with:
           python-version: '3.11'
           cache: pip
+      - name: Reuse and validate existing recordings
+        id: reuse
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python publish_brief.py --restore
       - name: Install speech engine
+        if: steps.reuse.outputs.ready != 'true'
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y espeak-ng ffmpeg
@@ -34,6 +40,7 @@ jobs:
       - name: Test publication validation
         run: python -m unittest discover -s tests -p test_brief.py -v
       - name: Prepare four brief devotions in both voices
+        if: steps.reuse.outputs.ready != 'true'
         run: python generate_brief.py
       - name: Validate and publish saved recordings
         env:
