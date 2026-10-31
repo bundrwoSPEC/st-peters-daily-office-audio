@@ -1,0 +1,39 @@
+name: Prepare brief devotions
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - devotions.py
+      - generate_brief.py
+      - publish_brief.py
+      - .github/workflows/brief-devotions.yml
+permissions:
+  contents: read
+concurrency:
+  group: brief-devotions-v1
+  cancel-in-progress: false
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Install speech engine
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y espeak-ng ffmpeg
+          pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt
+      - name: Prepare four brief devotions in both voices
+        run: python generate_brief.py
+      - name: Validate and publish saved recordings
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python publish_brief.py
